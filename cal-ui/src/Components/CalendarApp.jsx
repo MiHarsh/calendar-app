@@ -1,9 +1,15 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import '../Components/CalendarApp.css';
 import Calendar from './Calendar/Calendar';
 
 const CalendarApp = () => {
+  function formatDate(dateInput) {
+    const date = new Date(dateInput);
+    const options = { month: 'short', day: '2-digit', year: 'numeric' };
+    const formatted = date.toLocaleDateString('en-US', options);
+    return formatted.replace(',', '');
+  }
   const curDate = new Date();
   const [curMonth, setCurMonth] = useState(curDate.getMonth());
   const [curYear, setCurYear] = useState(curDate.getFullYear());
@@ -39,7 +45,60 @@ const CalendarApp = () => {
     }
     // console.log(showEventPopup,clickedDate)
   };
+  //*********************** */
 
+  const [events, setEvents] = useState([]);
+  const [hours, setHours] = useState('');
+  const [minutes, setMinutes] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [media, setMedia] = useState(null);
+
+  const fileInputRef = useRef(null); // Reference to the file input
+
+  useEffect(() => {
+    console.log('Updated events:', events);
+  }, [events]);
+
+  const handleAddEvent = () => {
+    const newEvent = {
+      id : new Date(),
+      time: `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`,
+      date: selectedDate,
+      title,
+      description,
+      media,
+    };
+
+    setEvents(prev => [...prev, newEvent]);
+
+    // Clear form
+    setHours('');
+    setMinutes('');
+    setTitle('');
+    setDescription('');
+    setMedia(null);
+
+    SetShowEventPopup(false);
+  };
+
+  const handleMediaChange = e => {
+    const file = e.target.files[0];
+    setMedia(file);
+  };
+
+  const removeMedia = () => {
+    setMedia(null);
+    setMedia(null); // Remove file from state
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Reset the file input field
+    }
+  };
+
+  const handleDeleteEvent = (id) => {
+    setEvents((prevEvents) => prevEvents.filter((event) => event.id !== id));
+  };
+  //************//
   return (
     <div className="calendar-app">
       <Calendar
@@ -62,6 +121,8 @@ const CalendarApp = () => {
                 min={0}
                 max={23}
                 className="hours"
+                value={hours}
+                onChange={e => setHours(e.target.value)}
               />
               <input
                 type="number"
@@ -69,22 +130,43 @@ const CalendarApp = () => {
                 min={0}
                 max={59}
                 className="minutes"
+                value={minutes}
+                onChange={e => setMinutes(e.target.value)}
               />
             </div>
-            <textarea placeholder="Enter Event Title (Max 20 Characters)"></textarea>
-            <textarea placeholder="Enter Event Description (Max 120 Characters)"></textarea>
+            <textarea
+              placeholder="Enter Event Title (Max 20 Characters)"
+              maxLength={20}
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+            ></textarea>
+            <textarea
+              placeholder="Enter Event Description (Max 120 Characters)"
+              maxLength={120}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+            ></textarea>
             <div className="event-media">
               <input
                 type="file"
                 name="media"
                 accept="image/*,video/*"
                 className="event-media-input"
+                onChange={handleMediaChange}
+                ref={fileInputRef}
               />
-              <button className="event-media-remove-btn">
-                <i className="bx bxs-trash-alt"></i>
-              </button>
+              {media && (
+                <button
+                  className="event-media-remove-btn"
+                  onClick={removeMedia}
+                >
+                  <i className="bx bxs-trash-alt"></i>
+                </button>
+              )}
             </div>
-            <button className="event-popup-btn">Add Event</button>
+            <button className="event-popup-btn" onClick={handleAddEvent}>
+              Add Event
+            </button>
             <button
               className="event-popup-close-btn"
               onClick={() => SetShowEventPopup(false)}
@@ -94,29 +176,43 @@ const CalendarApp = () => {
           </div>
         )}
 
-        <div className="event">
-          <div className="event-date-wrapper">
-            <div className="event-date">May, 12, 2024</div>
-            <div className="event-time">12:00</div>
-          </div>
-          <div className="event-content">
-            <div className="event-title"> Appelute Meeting</div>
-            <div className="event-text">
-              This is meeting for discussion on further steps
-            </div>
-            {/* <div className="event-media">
-            <video controls className="event-video">
-          <source src={'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-  </div> */}
-          </div>
+        {events.map(
+          event =>
+            isSameDay(event.date, selectedDate) && (
+              <div key={event.id} className="event">
+                <div className="event-date-wrapper">
+                  {console.log(selectedDate)}
+                  <div className="event-date">{formatDate(event.date)}</div>
+                  <div className="event-time">{event.time}</div>
+                </div>
 
-          <div className="event-btns">
-            <i className="bx bxs-edit-alt"></i>
-            <i className="bx bxs-message-alt-x"></i>
-          </div>
-        </div>
+                <div className="event-content">
+                  <div className="event-title">{event.title}</div>
+                  <div className="event-text">{event.description}</div>
+
+                  {event.media &&
+                    (event.media.type.startsWith('video/') ? (
+                      <video
+                        src={URL.createObjectURL(event.media)}
+                        controls
+                        className="event-media-content"
+                      ></video>
+                    ) : event.media.type.startsWith('image/') ? (
+                      <img
+                        src={URL.createObjectURL(event.media)}
+                        alt={event.media.name}
+                        className="event-media-content"
+                      />
+                    ) : null)}
+                </div>
+
+                <div className="event-btns">
+                  <i className="bx bxs-edit-alt"></i>
+                  <i className="bx bxs-trash-alt"  onClick={() => handleDeleteEvent(event.id)}></i>
+                </div>
+              </div>
+            )
+        )}
       </div>
     </div>
   );
