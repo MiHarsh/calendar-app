@@ -1,41 +1,19 @@
 import React from 'react';
-import { useState } from 'react';
-import '../Calendar/Calendar.css';
+// import { useState } from 'react';
+import './Calendar.css';
+import { daysOfWeek, monthsOfYear } from './CalendarConstants';
 
-const Calendar = () => {
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const monthsOfYear = [
-    'January',
-    'Febuary',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-
-  const curDate = new Date();
-
-  const [curMonth, setCurMonth] = useState(curDate.getMonth());
-  const [curYear, setCurYear] = useState(curDate.getFullYear());
-
+const Calendar = ({
+  curMonth,
+  curYear,
+  curDate,
+  prevMonth,
+  nextMonth,
+  handleDayClick,
+}) => {
   const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
   const firstDayOfMonth = new Date(curYear, curMonth, 1).getDay();
 
-  const prevMonth = () => {
-    setCurMonth(prevMonth => (prevMonth === 0 ? 11 : prevMonth - 1));
-    setCurYear(prevYear => (curMonth === 0 ? prevYear - 1 : prevYear));
-  };
-
-  const nextMonth = () => {
-    setCurMonth(prevMonth => (prevMonth === 11 ? 0 : prevMonth + 1));
-    setCurYear(prevYear => (curMonth === 11 ? prevYear + 1 : prevYear));
-  };
   return (
     <div className="calendar">
       <h1 className="heading"> Calendar </h1>
@@ -67,6 +45,7 @@ const Calendar = () => {
                 ? 'current-day'
                 : ''
             }
+            onClick={() => handleDayClick(day + 1)}
           >
             {day + 1}
           </span>
