@@ -118,6 +118,7 @@
 }
 
 .event-popup {
+  display:none;
   position: absolute;
   top: 34%;
   left: 3rem;
