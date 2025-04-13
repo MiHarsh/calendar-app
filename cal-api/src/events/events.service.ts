@@ -15,7 +15,14 @@ import { Event } from './entities/event.entity';
 @Injectable()
 export class EventsService {
   constructor(private readonly eventsGateway: EventsGateway) {}
-  private events: Event[] = [];
+  private events: Event[] = [{
+    id: '2',
+    title: 'Sample Event',
+    description: 'This is a sample event',
+    startTime: new Date(Date.now() + 60000).toISOString(), // 1 minute from now
+    media: undefined,
+    createdOn: new Date(),
+  }];
   private notifiedEventIds = new Set<string>();
 
   create(createEventDto: CreateEventDto, file?: Express.Multer.File): Event {
@@ -135,5 +142,6 @@ export class EventsService {
         this.notifiedEventIds.add(event.id);
       }
     }
+
   }
 }

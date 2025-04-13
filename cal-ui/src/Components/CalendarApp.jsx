@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import '../Components/CalendarApp.css';
 import Calendar from './Calendar/Calendar';
+import { useSocket } from '../Context/SocketContext';
 
 const CalendarApp = () => {
   function formatDate(dateInput) {
@@ -54,11 +55,26 @@ const CalendarApp = () => {
   const [description, setDescription] = useState('');
   const [media, setMedia] = useState(null);
 
+  const socket = useSocket(); // Get the socket instance from context
+
   const fileInputRef = useRef(null); // Reference to the file input
 
   useEffect(() => {
     console.log('Updated events:', events);
   }, [events]);
+
+  useEffect(() => {
+    if(!socket) return;
+    socket.on('connect', () => {
+      console.log('Connected to socket server');
+    });
+
+    socket.on('eventStarting',(event) => {
+      console.log('Event starting:', event);
+      // setEvents(prevEvents => [...prevEvents, event]);
+    })
+
+  }, [socket]);
 
   const handleAddEvent = () => {
     const newEvent = {
