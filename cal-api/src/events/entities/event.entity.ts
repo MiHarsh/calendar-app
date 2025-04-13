@@ -3,7 +3,7 @@ export class Event {
   title: string;
   description: string;
   date: string;
-  startTime: string;
-  media: object;
+  startTime: Date;
+  media?: object | undefined;
   createdAt: Date;
 }

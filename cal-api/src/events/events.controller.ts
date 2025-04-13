@@ -33,11 +33,12 @@ export class EventsController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 })],
+        fileIsRequired: false,
       }),
     )
-    file: Express.Multer.File,
+    file?: Express.Multer.File,
   ): Event {
-    console.log(typeof file, createEventDto);
+    // console.log(typeof file, createEventDto);
 
     return this.eventsService.create(createEventDto, file);
   }
