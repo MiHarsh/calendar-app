@@ -5,14 +5,13 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 
-import { Event } from './entities/event.entity';
-
 import { Server, Socket } from 'socket.io';
 
+import { Event } from './entities/event.entity';
 @WebSocketGateway({
   cors: {
-    origin: '*', // Allow all origins
-    methods: ['GET', 'POST'], // You can add more methods if needed
+    origin: '*',
+    methods: ['GET', 'POST'],
   },
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -27,8 +26,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log('Client disconnected: ' + client.id);
   }
 
-  notifyEventStart(event: Event) {
+  sendEventReminder(event: Event) {
     this.server.emit('eventStarting', event);
-    console.log(event);
   }
 }

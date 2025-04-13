@@ -9,14 +9,17 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseFilePipe,
+  FileTypeValidator,
   MaxFileSizeValidator,
 } from '@nestjs/common';
 
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
+
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
-import { memoryStorage } from 'multer';
 
 @Controller('events')
 export class EventsController {
@@ -32,15 +35,43 @@ export class EventsController {
     @Body() createEventDto: CreateEventDto,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 })],
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new FileTypeValidator({
+            fileType: /(image\/(jpeg|png|gif)|video\/(mp4|mkv|avi))/i,
+          }),
+        ],
         fileIsRequired: false,
       }),
     )
-    file?: Express.Multer.File,
+    file: Express.Multer.File,
   ): Event {
-    // console.log(typeof file, createEventDto);
-
     return this.eventsService.create(createEventDto, file);
+  }
+
+  @Patch(':id')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+    }),
+  )
+  update(
+    @Param('id') id: string,
+    @Body() updateEventDto: UpdateEventDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new FileTypeValidator({
+            fileType: /(image\/(jpeg|png|gif)|video\/(mp4|mkv|avi))/i,
+          }),
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    file: Express.Multer.File,
+  ): Event {
+    return this.eventsService.updateEventById(id, updateEventDto, file);
   }
 
   @Get()
